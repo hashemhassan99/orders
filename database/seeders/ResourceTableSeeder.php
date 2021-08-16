@@ -6,6 +6,7 @@ use App\Models\event;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Models\Unit;
+use App\Models\User;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
 
@@ -24,6 +25,8 @@ class ResourceTableSeeder extends Seeder
                 'quantity' => $faker->randomDigit(),
                 'value' => $faker->randomDigit(),
                 'purpose' => $faker->name,
+                'user_id' => User::inRandomOrder()->first()->id,
+
                 'event_id' => event::inRandomOrder()->first()->id,
                 'resource_category_id' => ResourceCategory::inRandomOrder()->first()->id,
                 'unit_id' => Unit::inRandomOrder()->first()->id,

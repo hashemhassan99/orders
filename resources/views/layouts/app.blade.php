@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="userId" content="{{ auth()->check() ? auth()->id() :'' }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
@@ -34,6 +35,9 @@
 
 <!-- Scripts -->
 <script src="{{ asset('js/app.js') }}"></script>
+<script>
+    Echo.channel('')
+</script>
 
 @include('sweetalert::alert')
 

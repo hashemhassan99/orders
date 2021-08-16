@@ -16,6 +16,7 @@ class CreateMaintaincesTable extends Migration
         Schema::create('maintainces', function (Blueprint $table) {
             $table->id();
             $table->text('description');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('maintaince_category_id')->constrained()->cascadeOnDelete();
             $table->foreignId('event_id')->default(2)->constrained()->cascadeOnDelete();
 

@@ -25,6 +25,11 @@ class UserController extends Controller
         return view('users.edit',compact('user'));
     }
 
+    public function show()
+    {
+
+    }
+
     public function update(Request $request,User $user)
     {
         $request->validate([

@@ -6,6 +6,7 @@ use App\Models\event;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Models\Unit;
+use App\Notifications\ResourceNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -14,21 +15,22 @@ class ResourceController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['role:Admin'])->except('index','show','changeStatus');
+        $this->middleware(['role:Admin'])->except('index', 'show', 'changeStatus', 'create', 'store', 'notification');
+
     }
 
     public function index()
     {
         $resources = Resource::orderByDesc('id')->paginate(5);
-        return view('resources.index',compact('resources'));
+        return view('resources.index', compact('resources'));
     }
 
     public function create()
     {
         $categories = ResourceCategory::all();
-        $units  = Unit::all();
-        return view('resources.create',compact('categories','units'));
-   }
+        $units = Unit::all();
+        return view('resources.create', compact('categories', 'units'));
+    }
 
     public function store(Request $request)
     {
@@ -43,23 +45,31 @@ class ResourceController extends Controller
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
+
+       $userId = auth()->check() ? auth()->id() : null;
+//        $userId = $request->id;
         $quantity = $request->quantity;
         $value = $request->value;
         $purpose = $request->purpose;
         $resource_category_id = $request->resource_category_id;
         $unit_id = $request->unit_id;
 
-        for ($i=0;$i<count($quantity);$i++){
+        for ($i = 0; $i < count($quantity); $i++) {
             $datasave = [
-              'quantity' => $quantity[$i],
-              'value' => $value[$i],
-              'purpose' => $purpose[$i],
-              'resource_category_id' => $resource_category_id[$i],
-              'unit_id' => $unit_id[$i],
+                'quantity' => $quantity[$i],
+                'value' => $value[$i],
+                'purpose' => $purpose[$i],
+                'resource_category_id' => $resource_category_id[$i],
+                'unit_id' => $unit_id[$i],
+                'user_id' => $userId
             ];
             $resource = Resource::create($datasave);
+            if ($resource){
+                $resource->user->notify(new ResourceNotification($resource));
+
+            }
         }
-        alert()->success('','Resources Added Success');
+        alert()->success('', 'Resources Added Success');
         return redirect()->route('resources.index');
 
 
@@ -67,18 +77,18 @@ class ResourceController extends Controller
 
     public function show($id)
     {
-        $resource = Resource::with(['ResourceCategory','unit','event'])->whereId($id)->first();
-        return view('resources.show',compact('resource'));
+        $resource = Resource::with(['ResourceCategory', 'unit', 'event'])->whereId($id)->first();
+        return view('resources.show', compact('resource'));
     }
 
     public function edit($id)
     {
-        $resources = Resource::with(['ResourceCategory','event','unit'])->whereId($id)->first();
+        $resources = Resource::with(['ResourceCategory', 'event', 'unit'])->whereId($id)->first();
         $events = event::all();
-        return view('resources.edit',compact('resources','events'));
+        return view('resources.edit', compact('resources', 'events'));
     }
 
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'event_id' => 'required',
@@ -88,14 +98,15 @@ class ResourceController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
         $resource = Resource::whereId($id)->first();
-        if ($resource){
+        if ($resource) {
             $data['event_id'] = $request->event_id;
         }
         $resource->update($data);
-        alert()->success('','Status Changed Success');
+        alert()->success('', 'Status Changed Success');
         return redirect()->route('resources.index');
 
     }
+
     public function changeStatus($id)
     {
         $resource = Resource::find($id);
@@ -105,5 +116,13 @@ class ResourceController extends Controller
         return redirect()->route('statues.index');
 
 
+    }
+    public function notification()
+    {
+        auth()->user()->unreadNotifications();
+
+        return view('notifications',[
+            'notifications' => auth()->user()->notifications()->get()
+        ]);
     }
 }

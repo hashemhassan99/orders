@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\event;
 use App\Models\Status;
+use App\Models\User;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
 
@@ -24,6 +25,8 @@ class StatusTableSeeder extends Seeder
                 'description' => $faker->text,
                 'notes' => $faker->text,
                 'procedure' => $faker->text,
+                'user_id' => User::inRandomOrder()->first()->id,
+
                 'event_id' => event::inRandomOrder()->first()->id,
 
             ]);

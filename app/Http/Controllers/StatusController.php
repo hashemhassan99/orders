@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\event;
 use App\Models\Status;
+use App\Notifications\StatusNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,7 +12,8 @@ class StatusController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['role:Admin'])->except('index','show','changeStatus');
+        $this->middleware(['role:Admin'])->except('index', 'show', 'changeStatus','create','store','notification');
+
     }
     public function index()
     {
@@ -36,13 +38,19 @@ class StatusController extends Controller
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-
+        $userId = auth()->check() ? auth()->id() : null;
         $data['transformer'] = $request->transformer;
         $data['description'] = $request->description;
         $data['notes'] = $request->notes;
         $data['procedure'] = $request->procedure;
+        $data['user_id']        = $userId;
+
 
         $status =Status::create($data);
+        if ($status){
+            $status->user->notify(new StatusNotification($status));
+
+        }
         alert()->success('','Status Added Success');
         return redirect()->route('statues.index');
     }
@@ -87,5 +95,14 @@ class StatusController extends Controller
         return redirect()->route('statues.index');
 
 
+    }
+
+    public function notification()
+    {
+        auth()->user()->unreadNotifications();
+
+        return view('notifications',[
+            'notifications' => auth()->user()->notifications()->get()
+        ]);
     }
 }

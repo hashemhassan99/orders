@@ -18,6 +18,8 @@ class CreateResourcesTable extends Migration
             $table->string('quantity');
             $table->string('value');
             $table->string('purpose');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+
             $table->foreignId('resource_category_id')->constrained()->cascadeOnDelete();
             $table->foreignId('unit_id')->constrained()->cascadeOnDelete();
             $table->foreignId('event_id')->default(2)->constrained()->cascadeOnDelete();

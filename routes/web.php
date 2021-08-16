@@ -23,7 +23,9 @@ Route::get('/dashboard', function () {
 
 require __DIR__.'/auth.php';
 
+
 Route::resource('users',\App\Http\Controllers\UserController::class);
+Route::get('notifications',[\App\Http\Controllers\Maintenance::class,'notification'])->name('notifications');
 Route::resource('maintenance',\App\Http\Controllers\Maintenance::class);
 Route::resource('statues',\App\Http\Controllers\StatusController::class);
 Route::resource('resources',\App\Http\Controllers\ResourceController::class);

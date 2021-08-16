@@ -19,6 +19,8 @@ class CreateStatusesTable extends Migration
             $table->text('description');
             $table->text('notes');
             $table->text('procedure');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+
             $table->foreignId('event_id')->default(2)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
